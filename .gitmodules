@@ -1,0 +1,3 @@
+[submodule "libsodium-ios"]
+	path = libzmq-ios
+	url = https://github.com/ajres/libzmq-ios.git
