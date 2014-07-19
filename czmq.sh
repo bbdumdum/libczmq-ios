@@ -4,15 +4,17 @@
 
 set -e
 
-LIBNAME="libzmq.a"
+LIBNAME="libczmq.a"
 ROOTDIR=`pwd`
 
-#libsodium
-LIBSODIUM_DIST="${ROOTDIR}/libsodium-ios/libsodium_dist/"
-echo "Buliding dependency libsodium..."
-cd libsodium-ios
-bash libsodium.sh
+#libzmq
+LIBSODIUM_DIST="${ROOTDIR}/libzmq-ios/libzmq_dist/"
+echo "Buliding dependency libzmq..."
+cd libzmq-ios
+bash libzmq.sh
 cd $ROOTDIR
+
+exit
 
 ARCHS=${ARCHS:-"armv7 armv7s arm64 i386 x86_64"}
 DEVELOPER=$(xcode-select -print-path)
