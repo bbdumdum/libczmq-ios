@@ -11,4 +11,4 @@ This is a script that downloads and builds czmq for iOS, including libzmq, libso
  ```git clone https://github.com/ajres/libczmq-ios.git```
  2. In that directory run `git submodule update --init --recursive`. This will clone some external Git repositories.
  
-In the future, you can update to the latest sources by running "`git pull`" in the libczmq directory, then `git submodule update --recursive`.
+In the future, you can update to the latest sources by running "`git pull`" in the libczmq-ios directory, then `git submodule update --recursive`.
