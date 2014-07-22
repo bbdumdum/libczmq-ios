@@ -1,6 +1,5 @@
 #!/bin/sh
-# A script to download and build libzmq for iOS, including arm64
-# Adapted from https://raw2.github.com/seb-m/CryptoPill/master/libsodium.sh
+# A script to download and build libczmq for iOS, including arm64
 
 set -e
 
@@ -8,13 +7,12 @@ LIBNAME="libczmq.a"
 ROOTDIR=`pwd`
 
 #libzmq
-LIBSODIUM_DIST="${ROOTDIR}/libzmq-ios/libzmq_dist/"
+LIBSODIUM_DIST="${ROOTDIR}/libzmq-ios/libsodium-ios/libsodium_dist/"
+LIBZMQ_DIST="${ROOTDIR}/libzmq-ios/libzmq_dist/"
 echo "Buliding dependency libzmq..."
 cd libzmq-ios
 bash libzmq.sh
 cd $ROOTDIR
-
-exit
 
 ARCHS=${ARCHS:-"armv7 armv7s arm64 i386 x86_64"}
 DEVELOPER=$(xcode-select -print-path)
@@ -22,16 +20,16 @@ LIPO=$(xcrun -sdk iphoneos -find lipo)
 #LIPO=lipo
 # Script's directory
 SCRIPTDIR=$( (cd -P $(dirname $0) && pwd) )
-# libsodium root directory
-LIBDIR="libzeromq"
+# libczmq root directory
+LIBDIR="libczmq"
 mkdir -p $LIBDIR
 LIBDIR=$( (cd "${LIBDIR}"  && pwd) )
 # Destination directory for build and install
 DSTDIR=${SCRIPTDIR}
-BUILDDIR="${DSTDIR}/libzmq_build"
-DISTDIR="${DSTDIR}/libzmq_dist"
+BUILDDIR="${DSTDIR}/libczmq_build"
+DISTDIR="${DSTDIR}/libczmq_dist"
 DISTLIBDIR="${DISTDIR}/lib"
-TARNAME="zeromq-4.0.3"
+TARNAME="czmq-2.2.0"
 TARFILE=${TARNAME}.tar.gz
 TARURL=http://download.zeromq.org/$TARFILE
 
@@ -41,18 +39,17 @@ SDK=$(xcodebuild -showsdks \
     | grep iphoneos | sort | tail -n 1 | awk '{print substr($NF, 9)}'
     )
 
-OTHER_LDFLAGS=""
+OTHER_LDFLAGS="-lc++"
 OTHER_CFLAGS="-Os -Qunused-arguments"
-OTHER_CPPFLAGS="-Os -I${LIBSODIUM_DIST}/include"
+OTHER_CPPFLAGS="-Os -I${LIBZMQ_DIST}/include -I${LIBSODUIUM_DIST}/include"
 OTHER_CXXFLAGS="-Os"
 
-
-rm -rf $LIBDIR
-set -e
-curl -O -L $TARURL
-tar xzf $TARFILE
-rm $TARFILE
-mv $TARNAME $LIBDIR
+#rm -rf $LIBDIR
+#set -e
+#curl -O -L $TARURL
+#tar xzf $TARFILE
+#rm $TARFILE
+#mv $TARNAME $LIBDIR
 
 
 
@@ -140,8 +137,9 @@ do
 	--prefix=${BUILDARCHDIR} \
 	--disable-shared \
 	--enable-static \
-	--host=${HOST}\
-	--with-libsodium=${LIBSODIUM_DIST}
+	--host=${HOST} \
+	--with-libsodium=${LIBSODIUM_DIST} \
+	--with-libzmq=${LIBZMQ_DIST}
 
     echo "Building ${LIBNAME} for ${ARCH}..."
     cd ${LIBDIR}/src
