@@ -7,14 +7,14 @@ LIBNAME="libczmq.a"
 ROOTDIR=`pwd`
 
 #libzmq
-LIBSODIUM_DIST="${ROOTDIR}/libzmq-ios/libsodium-ios/libsodium_dist/"
-LIBZMQ_DIST="${ROOTDIR}/libzmq-ios/libzmq_dist/"
-echo "Buliding dependency libzmq..."
+LIBSODIUM_DIST="${ROOTDIR}/libzmq-ios/libsodium-ios/libsodium_dist"
+LIBZMQ_DIST="${ROOTDIR}/libzmq-ios/libzmq_dist"
+#echo "Buliding dependency libzmq..."
 cd libzmq-ios
 bash libzmq.sh
 cd $ROOTDIR
 
-ARCHS=${ARCHS:-"armv7 armv7s arm64 i386 x86_64"}
+ARCHS=${ARCHS:-"armv7 armv7s arm64"}
 DEVELOPER=$(xcode-select -print-path)
 LIPO=$(xcrun -sdk iphoneos -find lipo)
 #LIPO=lipo
@@ -29,7 +29,7 @@ DSTDIR=${SCRIPTDIR}
 BUILDDIR="${DSTDIR}/libczmq_build"
 DISTDIR="${DSTDIR}/libczmq_dist"
 DISTLIBDIR="${DISTDIR}/lib"
-TARNAME="czmq-2.2.0"
+TARNAME="czmq-3.0.2"
 TARFILE=${TARNAME}.tar.gz
 TARURL=http://download.zeromq.org/$TARFILE
 
@@ -39,19 +39,17 @@ SDK=$(xcodebuild -showsdks \
     | grep iphoneos | sort | tail -n 1 | awk '{print substr($NF, 9)}'
     )
 
-OTHER_LDFLAGS="-lc++"
+OTHER_LDFLAGS="-lc++ -lzmq -lsodium -L${LIBZMQ_DIST}/lib -L${LIBSODIUM_DIST}/lib"
 OTHER_CFLAGS="-Os -Qunused-arguments"
-OTHER_CPPFLAGS="-Os -I${LIBZMQ_DIST}/include -I${LIBSODUIUM_DIST}/include"
+OTHER_CPPFLAGS="-Os -I${LIBZMQ_DIST}/include -I${LIBSODIUM_DIST}/include"
 OTHER_CXXFLAGS="-Os"
 
-#rm -rf $LIBDIR
-#set -e
-#curl -O -L $TARURL
-#tar xzf $TARFILE
-#rm $TARFILE
-#mv $TARNAME $LIBDIR
-
-
+rm -rf $LIBDIR
+set -e
+curl -O -L $TARURL
+tar xzf $TARFILE
+rm $TARFILE
+mv $TARNAME $LIBDIR
 
 # Cleanup
 if [ -d $BUILDDIR ]
@@ -65,8 +63,7 @@ fi
 mkdir -p $BUILDDIR $DISTDIR
 
 # Generate autoconf files
-cd ${LIBDIR}
-#cd ${LIBDIR}; ./autogen.sh
+cd ${LIBDIR};
 
 # Iterate over archs and compile static libs
 for ARCH in $ARCHS
@@ -129,6 +126,10 @@ do
 
     export PATH="${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/bin:${DEVELOPER}/Toolchains/XcodeDefault.xctoolchain/usr/sbin:$PATH"
 
+    echo "ZMQ located at ${LIBZMQ_DIST}"
+    echo "CPPFLAGS: ${CPPFLAGS}"    
+    echo "LDFLAGS: ${LDFLAGS}"    
+
     echo "Configuring for ${ARCH}..."
     set +e
     cd ${LIBDIR} && make distclean
@@ -138,11 +139,12 @@ do
 	--disable-shared \
 	--enable-static \
 	--host=${HOST} \
-	--with-libsodium=${LIBSODIUM_DIST} \
-	--with-libzmq=${LIBZMQ_DIST}
-
+    --with-libzmq=${LIBZMQ_DIST}
+#--with-libsodium=${LIBSODIUM_DIST} \
+    
     echo "Building ${LIBNAME} for ${ARCH}..."
-    cd ${LIBDIR}/src
+    #cd ${LIBDIR}/src
+    cd ${LIBDIR}
     
     make -j8 V=0
     make install
